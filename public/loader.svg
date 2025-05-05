@@ -1,0 +1,14 @@
+<svg
+    className="animate-spin h-5 w-5 mr-3 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+>
+    <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+    d="M12 4v1m0 14v1m8.66-10.66l-.707.707M6.34 17.66l-.707.707M4 12h1m14 0h1m-2.34-6.34l-.707.707M6.34 6.34l-.707-.707"
+    />
+</svg>
