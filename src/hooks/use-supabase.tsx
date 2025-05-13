@@ -21,29 +21,29 @@ import { HookCallback } from '@/types';
 type SupabaseAuthStateHandler = (
   event: AuthChangeEvent,
   session: Session | null
-) => void | Promise<void>;
+) => void;
 
-type HookState = {
+type AuthHookState = {
   isAuthenticated: boolean;
   isLoading: boolean;
 };
 
-type HookProps = {
+type AuthHookOpts = {
   client?: ReturnType<typeof createBrowserClient>;
   onAuthStateChange?: SupabaseAuthStateHandler;
 };
 
-type HookReturn = {
+type AuthHookReturn = {
   getUser: () => Promise<User>;
   signOut: () => Promise<void>;
   session: Session | null;
-  state: HookState;
+  state: AuthHookState;
   user?: User;
   userId?: string;
   username?: string;
 };
 
-export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
+export const useAuth: HookCallback<AuthHookOpts, AuthHookReturn> = ({
   client,
   onAuthStateChange,
 } = {}) => {
@@ -54,16 +54,24 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
   const [_session, _setSession] = React.useState<Session | null>(null);
   const [_user, _setUser] = React.useState<User | undefined>();
   // loading states
-  const [_isAuthenticated, _setIsAuthenticated] = React.useState(false);
   const [_isSessionLoading, _setIsSessionLoading] = React.useState(true);
   const [_isUserLoading, _setIsUserLoading] = React.useState(false);
 
-  const state = React.useMemo(
+  const _isAuthenticated = React.useMemo(
+    () => !!_session?.user,
+    [_session]
+  );
+  const _isLoading = React.useMemo(
+    () => _isSessionLoading || _isUserLoading,
+    [_isSessionLoading, _isUserLoading]
+  );
+
+  const _state = React.useMemo(
     () => ({
-      isAuthenticated: !!_session?.user,
-      isLoading: _isSessionLoading || _isUserLoading,
+      isAuthenticated: _isAuthenticated,
+      isLoading: _isLoading,
     }),
-    [_session, _isSessionLoading, _isUserLoading]
+    [_isAuthenticated, _isLoading]
   );
 
   // this callback handles auth state changes
@@ -78,7 +86,7 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
       );
       // if a method is passed, call it with the event and session
       // data **before** executing the default behaviors
-      if (onAuthStateChange) await onAuthStateChange(event, session);
+      if (onAuthStateChange) onAuthStateChange(event, session);
 
       // update the local session
       _setSession(session);
@@ -90,7 +98,6 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
       }
       if (session) {
         const { user } = session;
-        _setIsAuthenticated(true);
         if (
           [
             'PASSWORD_RECOVERY',
@@ -111,7 +118,7 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
       }
     });
     return subscription;
-  }, [supabase, _setIsAuthenticated, _setSession, _setUser, onAuthStateChange]);
+  }, [supabase, _setSession, _setUser, onAuthStateChange]);
   // use the supabase client to get the session
   const _getSession = React.useCallback(async (): Promise<Session | null> => {
     if (!_isSessionLoading) _setIsSessionLoading(true);
@@ -125,7 +132,6 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
         throw error;
       }
       if (!session) {
-        _setIsAuthenticated(false);
         return null;
       }
       _setSession(session);
@@ -183,6 +189,7 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
   }, [_isSessionLoading, _setIsSessionLoading, _getSession]);
   // user-specific loading effects
   React.useEffect(() => {
+    // trigger the user loading process if the session is loaded and the user is not
     if (_isUserLoading) _getUser();
     // handle unmounting
     return () => {
@@ -192,8 +199,8 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
   }, [_isUserLoading, _setIsUserLoading, _getUser]);
   // realtime-specific effects
   React.useEffect(() => {
+    // if there isn't a reference to the subscription, create one
     authSubRef.current ??= _createAuthSub();
-
     // handle unmounting
     return () => {
       // cleanup realtime effects
@@ -202,25 +209,19 @@ export const useSupabaseAuth: HookCallback<HookProps, HookReturn> = ({
     };
   }, [_createAuthSub]);
 
-  
   // redeclare external methods and variables
-  const session = _session;
-  const user = _user;
   const getUser = _getUser;
-
-  
-
-
+  // memoize the return object
   return React.useMemo(
     () => ({
-      session,
-      state,
-      user,
-      userId: user?.id,
-      username: user?.user_metadata.username,
+      session: _session,
+      state: _state,
+      user: _user,
+      userId: _user?.id,
+      username: _user?.user_metadata.username,
       getUser,
       signOut,
     }),
-    [session, state, user, getUser, signOut]
+    [_session, _state, _user, getUser, signOut]
   );
 };

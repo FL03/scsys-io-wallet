@@ -12,22 +12,22 @@ import { useSidebar } from '@/components/ui/sidebar';
 export const CustomSidebarTrigger: React.FC<
   Omit<React.ComponentPropsWithRef<typeof Button>, 'children'> & {
     side?: 'left' | 'right';
-    hideLabel?: boolean;
+    showLabel?: boolean;
   }
 > = ({
   ref,
   className,
-  onClick,
-  hideLabel = false,
+  showLabel,
   side = 'left',
   size = 'default',
   variant = 'ghost',
+  onClick,
   ...props
 }) => {
   const { open, openMobile, toggleSidebar, state } = useSidebar();
 
-  const isExpanded = open || openMobile || state === 'expanded';
-  const buttonSize = isExpanded ? size : 'icon';
+  const isOpen = open || openMobile || state === 'expanded';
+  const buttonSize = isOpen && showLabel ? size : 'icon';
 
   return (
     <Button
@@ -37,7 +37,7 @@ export const CustomSidebarTrigger: React.FC<
       className={cn(
         'items-center justify-center min-w-8',
         'hover:background-blur hover:text-accent-foreground/75',
-        isExpanded && 'justify-start w-full',
+        isOpen && 'justify-start w-full',
         className
       )}
       onClick={(event) => {
@@ -51,7 +51,7 @@ export const CustomSidebarTrigger: React.FC<
       size={buttonSize}
       variant={variant}
     >
-      {isExpanded ? (
+      {isOpen ? (
         <SidebarCloseIcon
           className={cn('h-4 w-4', side === 'right' && 'rotate-180')}
         />
@@ -61,10 +61,8 @@ export const CustomSidebarTrigger: React.FC<
         />
       )}
       {
-        <span
-          className={cn(isExpanded && !hideLabel ? 'not-sr-only' : 'sr-only')}
-        >
-          {isExpanded ? 'Close' : 'Open'} Sidebar
+        <span className={cn(isOpen && showLabel ? 'not-sr-only' : 'sr-only')}>
+          {isOpen ? 'Close' : 'Open'}
         </span>
       }
     </Button>

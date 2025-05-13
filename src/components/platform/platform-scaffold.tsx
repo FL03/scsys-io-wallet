@@ -5,7 +5,11 @@ import * as React from 'react';
 import { PlatformAppBar } from './nav/platform-appbar';
 import { PlatformSidebar } from './sidebar/platform-sidebar';
 // components
-import { Scaffold, ScaffoldContent } from '@/components/common/scaffold';
+import {
+  Scaffold,
+  ScaffoldContent,
+  ScaffoldProvider,
+} from '@/components/common/scaffold';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +27,7 @@ export const PlatformScaffold: React.FC<
     React.PropsWithChildren<ScaffoldProps>
 > = ({
   ref,
+  className,
   children,
   fullWidth,
   sidebarOpenByDefault = false,
@@ -33,23 +38,22 @@ export const PlatformScaffold: React.FC<
 }) => {
   // render the scaffold with the app bar and sidebar
   return (
-    <SidebarProvider defaultOpen={sidebarOpenByDefault}>
-      <Scaffold {...props} ref={ref}>
-        <PlatformAppBar />
-        <ScaffoldContent
-          className={cn(
-            ' px-4 py-2 flex flex-col flex-1 gap-4 w-full',
-            !fullWidth && 'container mx-auto'
-          )}
-        >
-          {children}
-        </ScaffoldContent>
-        <PlatformSidebar
-          collapsible={sidebarOnCollapse}
-          side={sidebarPosition}
-          variant={sidebarVariant}
-        />
-      </Scaffold>
+    <SidebarProvider defaultOpen={sidebarOpenByDefault} className="flex-1 h-full w-full">
+      <ScaffoldProvider>
+        {/* screen */}
+        <Scaffold {...props} ref={ref} className={cn('min-h-full', className)}>
+          {/* appbar */}
+          <PlatformAppBar />
+          {/* display */}
+          <ScaffoldContent asContainer={!fullWidth}>{children}</ScaffoldContent>
+        </Scaffold>
+      </ScaffoldProvider>
+      {/* sidebar */}
+      <PlatformSidebar
+        collapsible={sidebarOnCollapse}
+        side={sidebarPosition}
+        variant={sidebarVariant}
+      />
     </SidebarProvider>
   );
 };

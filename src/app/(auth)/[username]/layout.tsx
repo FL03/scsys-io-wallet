@@ -9,7 +9,7 @@ export default async function Layout({ children, params }: Readonly<PropsWithChi
   const { username } = await params;
 
   return (
-    <ProfileProvider username={username} className="h-full w-full flex-1">
+    <ProfileProvider username={username}>
       {children}
     </ProfileProvider>
   );

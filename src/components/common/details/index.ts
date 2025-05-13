@@ -1,7 +1,2 @@
-/*
-  Appellation: details <components>
-  Contrib: @FL03
-*/
-
-export * from './detail-header';
-export * from './detail-skeleton';
+// skeletons/index.ts
+export * from './detail-scaffold';

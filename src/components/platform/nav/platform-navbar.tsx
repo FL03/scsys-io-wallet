@@ -10,7 +10,7 @@ import Link from 'next/link';
 // project
 import { cn } from '@/lib/utils';
 // hooks
-import { useSupabaseAuth } from '@/hooks/use-supabase';
+import { useAuth } from '@/hooks/use-supabase';
 // components
 import {
   NavigationMenu,
@@ -31,12 +31,7 @@ const NavLink: React.FC<
     }>
 > = ({ ref, children, label, asTrigger, ...props }) => {
   return (
-    <Link
-      {...props}
-      legacyBehavior
-      passHref
-      ref={ref}
-    >
+    <Link {...props} legacyBehavior passHref ref={ref}>
       <NavigationMenuLink
         className={cn('', asTrigger && navigationMenuTriggerStyle())}
       >

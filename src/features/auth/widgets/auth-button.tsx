@@ -12,9 +12,8 @@ import { LogInIcon, LogOutIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 // project
-import { ENDPOINT_AUTH_LOGIN } from '@/lib/consts';
+import { ENDPOINT_AUTH_LOGIN } from '@/lib/constants';
 import { logger } from '@/lib/logger';
-import { createBrowserClient } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 // components
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useSupabaseAuth } from '@/hooks/use-supabase';
+import { useAuth } from '@/hooks/use-supabase';
 
 type AuthButtonProps = {
   className?: string;
@@ -53,7 +52,7 @@ export const AuthButton: React.FC<
 }) => {
   const router = useRouter();
   // initialize the client-side supabase client
-  const auth = useSupabaseAuth();
+  const auth = useAuth();
   // a callback for handling the click event on the button
   const handleOnClick = async (event: React.BaseSyntheticEvent) => {
     // prevent default action
@@ -67,7 +66,7 @@ export const AuthButton: React.FC<
       if (auth.state.isAuthenticated) {
         if (onSignOut) onSignOut();
         else await auth.signOut();
-      } else  {
+      } else {
         if (onSignIn) onSignIn();
         else router.push(ENDPOINT_AUTH_LOGIN);
       }

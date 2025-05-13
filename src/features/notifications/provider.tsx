@@ -118,7 +118,7 @@ export const NotificationProvider = React.forwardRef<
     return () => {
       // ensure the loading state is false on unmount
       _setIsLoading(false);
-    }
+    };
   }, [username, _isLoading, _setIsLoading, _getNotifications]);
   // realtime effects
   React.useEffect(() => {

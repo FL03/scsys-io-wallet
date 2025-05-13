@@ -2,14 +2,14 @@
 -- Version: 0.0.1
 
 -- Create the table for public.pricing
-create table if not exists public.pricing (
-    id              uuid not null primary key unique default gen_random_uuid(),
-    title           text not null,
-    description     text,
-    price           numeric(10, 2),
-    currency        text not null default 'usd',
-    interval        text default 'monthly',
-    trial_period    int default 0,
+CREATE TABLE IF NOT EXISTS public.pricing (
+    id              UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+    title           TEXT NO NULL DEFAULT ''::text,
+    description     TEXT,
+    price           NUMERIC(10, 2),
+    currency        TEXT not null default 'usd'::text,
+    interval        TEXT default 'monthly'::text,
+    trial_period    INT default 0::int,
     metadata        jsonb
 ); 
 -- Set up Row Level Security (RLS)

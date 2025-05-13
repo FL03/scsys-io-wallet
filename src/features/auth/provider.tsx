@@ -11,15 +11,15 @@ import { Session, Subscription, User } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 import { createBrowserClient } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
-import { useSupabaseAuth } from '@/hooks/use-supabase';
+import { useAuth } from '@/hooks/use-supabase';
 
-type AuthContext = ReturnType<typeof useSupabaseAuth>;
+type AuthContext = ReturnType<typeof useAuth>;
 
 const AuthContext = React.createContext<AuthContext | null>(null);
 
 /** A hook dedicated to the supabase auth features */
-export const useAuth = () => {
-  const hookAuth = useSupabaseAuth();
+export const useAuthProvider = () => {
+  const hookAuth = useAuth();
   const context = React.useContext(AuthContext ?? hookAuth);
   if (!context) {
     logger.error(

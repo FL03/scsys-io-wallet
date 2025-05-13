@@ -39,7 +39,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 // feature-specific
-import {CustomSidebarTrigger} from './platform-sidebar-trigger';
+import { CustomSidebarTrigger } from './platform-sidebar-trigger';
 
 export type PlatformSidebarProps = {
   side?: 'left' | 'right';
@@ -86,7 +86,6 @@ const SidebarLink: React.FC<
   );
 };
 
-
 const _renderLinks = (...links: LinkProps[]) => {
   return (
     <>
@@ -104,7 +103,7 @@ const _SidebarNavGroup: React.FC<
   }
 > = ({ className, links = [], title = 'Profile', ...props }) => {
   return (
-    <SidebarGroup className={cn('flex-1', className)} {...props}>
+    <SidebarGroup className={cn('flex flex-col w-full', className)} {...props}>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>{_renderLinks(...links)}</SidebarMenu>
@@ -165,63 +164,79 @@ export const PlatformSidebar: React.FC<
       <SidebarContent className="bg-secondary/90 overflow-x-clip flex flex-col flex-1 h-full w-full justify-end">
         {/* trailing menu */}
         {username && (
-          <_SidebarNavGroup
-            className="mt-auto"
-            title="Profile"
-            links={[
-              {
-                name: 'Blog',
-                icon: <Lucide.PenBoxIcon />,
-                href: {
-                  pathname: '/blog',
-                  query: { view: 'details' },
+          <>
+            <_SidebarNavGroup
+              className="flex-1"
+              title="Apps"
+              links={[
+                {
+                  name: 'Blog',
+                  icon: <Lucide.RssIcon />,
+                  href: '/blog',
                 },
-              },
-              {
-                name: 'Dashboard',
-                icon: <Lucide.LayoutDashboardIcon />,
-                href: {
-                  pathname: `/admin/${username}`,
-                  query: { view: 'dashboard' },
+                {
+                  name: 'Editor',
+                  icon: <Lucide.LucideEdit2 />,
+                  href: {
+                    pathname: `/${username}/content`,
+                    query: { view: 'editor' },
+                  },
                 },
-              },
-              {
-                name: 'Profile',
-                icon: <Lucide.User2Icon />,
-                href: {
-                  pathname: `/users/${username}`,
-                  query: { view: 'details' },
+                {
+                  name: 'Dashboard',
+                  icon: <Lucide.LayoutDashboardIcon />,
+                  href: {
+                    pathname: `/${username}/admin`,
+                    query: { view: 'dashboard' },
+                  },
                 },
-              },
-              {
-                name: 'Notifications',
-                icon: <Lucide.BellIcon />,
-                href: {
-                  pathname: `/${username}/notifications`,
-                  query: { filter: 'all', sortBy: 'newest' },
+              ]}
+            />
+            <_SidebarNavGroup
+              className="flex-shrink-0 mt-auto"
+              title="Platform"
+              links={[
+                {
+                  name: 'Profile',
+                  icon: <Lucide.User2Icon />,
+                  href: {
+                    pathname: `/users/${username}`,
+                    query: { view: 'details' },
+                  },
                 },
-              },
-              {
-                name: 'Settings',
-                icon: <Lucide.SettingsIcon />,
-                href: {
-                  pathname: `/${username}/settings`,
-                  query: { defaultTab: 'profile' },
+                {
+                  name: 'Notifications',
+                  icon: <Lucide.BellIcon />,
+                  href: {
+                    pathname: `/${username}/notifications`,
+                    query: { filter: 'all', sortBy: 'newest' },
+                  },
                 },
-              },
-            ]}
-          />
+                {
+                  name: 'Settings',
+                  icon: <Lucide.SettingsIcon />,
+                  href: {
+                    pathname: `/${username}/settings`,
+                    query: { defaultTab: 'profile' },
+                  },
+                },
+              ]}
+            />
+          </>
         )}
         <SidebarSeparator />
       </SidebarContent>
       <SidebarFooter className="bg-secondary/90">
         {/* Actions */}
         <SidebarMenuButton asChild>
-          <CustomSidebarTrigger />
+          <CustomSidebarTrigger
+            showLabel={collapsible === 'icon' ? !isOpen : true}
+          />
         </SidebarMenuButton>
         <SidebarMenuButton asChild>
           <AuthButton
-            inline={isOpen}
+            inline={isOpen && collapsible === 'icon'}
+            variant="outline"
             onSuccess={() => {
               // close the sidebar on mobile
               if (isOpen) toggleSidebar();

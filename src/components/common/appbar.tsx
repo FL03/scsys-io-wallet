@@ -7,7 +7,7 @@ import { Slot } from '@radix-ui/react-slot';
 // project
 import { cn } from '@/lib/utils';
 
-const appBarVariants = cva('flex flex-row flex-nowrap items-center w-full ', {
+const appBarVariants = cva('flex flex-row flex-nowrap items-center w-full', {
   defaultVariants: {
     flavor: 'default',
     position: 'default',
@@ -94,7 +94,7 @@ export const Appbar = React.forwardRef<
         ref={ref}
         className={cn(
           appBarVariants({ flavor, position, variant }),
-          'gap-2 lg:gap-4 px-4 py-2 z-50',
+          'gap-2 lg:gap-4 px-4 py-2 z-auto min-h-1/12',
           'ring-none inner-shadow overflow-x-auto inset-0',
           className
         )}
@@ -135,6 +135,7 @@ export const AppbarLeading = React.forwardRef<
       ref={ref}
       className={cn(
         'mr-auto inline-flex flex-nowrap gap-2 items-center',
+        'max-w-1/3',
         className
       )}
       {...props}
@@ -154,6 +155,7 @@ export const AppbarTrailing = React.forwardRef<
       ref={ref}
       className={cn(
         'ml-auto inline-flex flex-nowrap gap-2 lg:gap-4 items-center justify-end',
+        'max-w-1/3',
         className
       )}
       {...props}
@@ -188,7 +190,7 @@ export const AppbarTitle = React.forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        'font-semibold',
+        'font-semibold tracking-tight',
         centerTitle && 'absolute left-1/2 transform -translate-x-1/2',
         className
       )}

@@ -7,7 +7,6 @@
 // imports
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { compareAsc } from 'date-fns';
 import { toast } from 'sonner';
 // project
 import { logger } from '@/lib/logger';
@@ -29,90 +28,39 @@ import {
 } from '@/components/common/dashboard';
 // feature-specific
 import { BlogPostData } from '../types';
+import { BlogDashboardPanel } from '../widgets/blog-dashboard-panel';
 
 type ViewProps = {
-  asChild?: boolean;
   description?: React.ReactNode;
   title?: React.ReactNode;
-  feed?: React.ReactNode;
-  featured?: BlogPostData[];
-  onRefresh?: () => void;
+  items?: BlogPostData[];
+  asChild?: boolean;
   isRefreshing?: boolean;
+  onRefresh?: () => void;
 };
 
-const BlogDashboardPanel: React.FC<
-  React.ComponentPropsWithRef<typeof DashboardContent> & {
-    items?: BlogPostData[];
-  }
-> = ({ ref, className, children, items = [], ...props }) => {
-  return (
-    <DashboardContent {...props} ref={ref} className={cn('', className)}>
-      <Card className="flex flex-col flex-1 w-full">
-        <CardContent>
-          <CardHeader>
-            <CardTitle className="text-xl">Blog</CardTitle>
-            <CardDescription>Welcome to the blog!</CardDescription>
-          </CardHeader>
-        </CardContent>
-      </Card>
-      {/* Info Container */}
-      <Card className="flex flex-col flex-1 w-full">
-        <CardHeader className="flex flex-row flex-nowrap items-center gap-2 justify-between">
-          <div className="mr-auto flex flex-wrap gap-2 items-center justify-items-start">
-            <CardTitle className="inline-flex gap-2">Featured</CardTitle>
-            <CardDescription className="text-sm inline-flex flex-nowrap gap-2">
-              View the latest featured posts from your network.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ul className="flex flex-col px-2 py-1 w-full list-none">
-            {items.map((item, index) => (
-              <li
-                key={index}
-                className="inline-flex flex-nowrap flex-1 items-center w-full gap-2 lg:gap-4 transition-colors hover:bg-blend-darken"
-              >
-                <div className="flex flex-col flex-1 mr-auto">
-                  <span className="font-lg font-semibold tracking-tight">
-                    {item?.title}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {item?.description}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-      {children}
-    </DashboardContent>
-  );
-};
-
+/** The screen component rendered directly by the app router at: `/blog` */
 export const BlogScreen: React.FC<
   Omit<React.ComponentPropsWithRef<'div'>, 'children' | 'title'> & ViewProps
 > = ({
   ref,
   className,
   description,
-  featured = [],
-  feed,
   title,
   asChild,
-  isRefreshing: isRefreshingProp = false,
+  isRefreshing = false,
   onRefresh,
   ...props
 }) => {
-  // hooks
+  // initialize a reference to the posts hook
   const posts = usePosts();
   // declare a refreshing state
-  const [isRefreshing, setIsRefreshing] = React.useState(isRefreshingProp);
+  const [refreshing, setRefreshing] = React.useState(isRefreshing);
 
   // handle the refresh action
   const handleOnRefresh = React.useCallback(async () => {
     // ensure the refreshing state is toggled
-    if (!isRefreshing) setIsRefreshing(true);
+    if (!refreshing) setRefreshing(true);
     // trace the event
     logger.trace('Refreshing posts...');
     // try refreshing the content
@@ -120,38 +68,28 @@ export const BlogScreen: React.FC<
       // use the callback if it was provided
       if (onRefresh) onRefresh();
       // otherwise, fetch the posts using the hook
-      else await posts.fetch();
+      else await posts.getAll();
     } finally {
       // finally change the refreshing state to false
-      setIsRefreshing(false);
+      setRefreshing(false);
     }
-  }, [posts, isRefreshing, setIsRefreshing, onRefresh]);
+  }, [posts, refreshing, setRefreshing, onRefresh]);
   // refreshing-related effects
   React.useEffect(() => {
     // respond to any changes to the refreshing state
-    if (isRefreshing) handleOnRefresh();
+    if (refreshing) handleOnRefresh();
 
     return () => {
       // cleanup function to reset the refreshing state
-      setIsRefreshing(false);
+      setRefreshing(false);
     };
-  }, [isRefreshing, posts, setIsRefreshing]);
+  }, [refreshing, posts, setRefreshing]);
   // ensure the component is in sync with the prop value
   React.useEffect(() => {
-    if (isRefreshingProp !== isRefreshing) {
-      setIsRefreshing(isRefreshingProp);
+    if (isRefreshing !== refreshing) {
+      setRefreshing(isRefreshing);
     }
-  }, [isRefreshingProp, isRefreshing, setIsRefreshing]);
-
-  const filterFeatured = React.useCallback(() => {
-    const nPosts = posts.data.length;
-    return posts.data
-      .filter((post) => post?.is_featured)
-      .sort((a, b) => {
-        return compareAsc(a.updated_at, b.updated_at);
-      })
-      .slice(0, nPosts > 3 ? 3 : undefined);
-  }, [posts.data]);
+  }, [isRefreshing, refreshing, setRefreshing]);
 
   // fallback to a Slot component when asChild
   const Comp = asChild ? Slot : 'div';
@@ -189,18 +127,12 @@ export const BlogScreen: React.FC<
                   },
                 });
               }}
-              isRefreshing={isRefreshing}
+              isRefreshing={refreshing}
             />
           </div>
         </section>
-        <DashboardScaffold
-          panel={<BlogDashboardPanel items={filterFeatured()} />}
-        >
-          <DashboardContent
-            className={cn(
-              'flex flex-col flex-1 w-full min-h-full overflow-hidden'
-            )}
-          >
+        <DashboardScaffold panel={<BlogDashboardPanel items={posts.data} />}>
+          <DashboardContent>
             <Card className="flex flex-col flex-1 w-full">
               <CardHeader className="flex flex-row flex-nowrap items-center gap-2 justify-between">
                 <div className="mr-auto flex flex-wrap gap-2 items-center justify-items-start">

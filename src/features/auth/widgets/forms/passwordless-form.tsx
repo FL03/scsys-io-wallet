@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-export const passwordlessSchema = z.object({
+const passwordlessSchema = z.object({
   email: z
     .string({ required_error: 'A valid email address is required to login' })
     .email({

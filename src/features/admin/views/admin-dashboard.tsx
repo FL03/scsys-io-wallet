@@ -13,7 +13,7 @@ import {
   DashboardContent,
   DashboardScaffold,
 } from '@/components/common/dashboard';
-import { DetailHeader } from '@/components/common/details';
+import { PopoverHeader } from '@/components/common/headers';
 import { Card, CardContent } from '@/components/ui/card';
 
 type DashboardProps = {
@@ -51,7 +51,7 @@ export const AdminDashboardView: React.FC<
       ref={ref}
       className={cn('flex flex-col flex-1 gap-4 w-full', className)}
     >
-      <DetailHeader title={title} description={description} className="mb-4" />
+      <PopoverHeader title={title} description={description} className="mb-4" />
       <Card>
         <CardContent>
           <DashboardScaffold panel={<AdminDashboardPanel />}>

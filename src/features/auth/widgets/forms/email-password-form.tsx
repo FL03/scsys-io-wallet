@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 // project
 import { logger } from '@/lib/logger';
-import { createBrowserClient } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 // components
 import { Button } from '@/components/ui/button';
@@ -39,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 // feature-specific
 import { AuthProviderButtons } from '../auth-provider-buttons';
+import { handleEmailPasswordLogin } from '../../utils';
 
 const emailPasswordForm = z
   .object({
@@ -95,7 +95,7 @@ export const EmailPasswordForm: React.FC<
   onSubmitSuccess,
   ...props
 }) => {
-  // handle input parameters
+  // ensure that both defaultValues and values are not provided at the same time
   if (defaultValues && values) {
     logger.warn(
       'Both defaultValues and values are provided; merging into defaults'
@@ -103,8 +103,7 @@ export const EmailPasswordForm: React.FC<
     defaultValues = parseEmailPasswordSchema({ ...defaultValues, ...values });
     values = undefined;
   }
-  // initialize the client-side supabase client
-  const supabase = createBrowserClient();
+
   // define the form with the useForm hook
   const form = useForm<EmailPasswordSchema>({
     resolver: zodResolver(emailPasswordForm),
@@ -112,39 +111,27 @@ export const EmailPasswordForm: React.FC<
     values,
   });
 
-  async function handleFormData(formData: EmailPasswordSchema) {
-    if (beforeSubmit) beforeSubmit();
-    // process the form submission
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        ...options,
-        captchaToken: captchaToken ?? options?.captchaToken,
-      },
-    });
-    if (error) {
-      logger.error(error, 'Error signing in with email and password...');
-      // set the form error
-      form.setError('root', {
-        type: 'manual',
-        message: error.message,
-      });
-      return;
+  // handle any effects
+  React.useEffect(() => {
+    // handle successful form submission effects
+    if (form.formState.isSubmitSuccessful) {
+      // call the onSubmitSuccess callback
+      if (onSubmitSuccess) onSubmitSuccess(form.getValues());
+      // reset the form
+      form.reset();
     }
-    // log the success
-    logger.info('Successfully authenticated the user...', data.user?.id);
-    // clear previous toasts
-    toast.dismiss();
-    // alert the user
-    toast.success('Login Successful', {
-      description: 'Redirecting to the home page...',
-    });
-    // call the onSubmitSuccess callback
-    if (onSubmitSuccess) onSubmitSuccess(formData);
-    // reset the form
-    form.reset();
-  };
+  }, [form, onSubmitSuccess]);
+
+  // handle any cancel invocations
+  function handleOnCancel(event: React.BaseSyntheticEvent) {
+    // prevent the default action
+    event.preventDefault();
+    // stop the event from bubbling up
+    event.stopPropagation();
+    // call the onCancel callback if provided
+    if (onCancel) onCancel();
+  }
+
   // handle form submissions
   function handleOnSubmit(event: React.BaseSyntheticEvent) {
     // prevent the default action
@@ -153,25 +140,31 @@ export const EmailPasswordForm: React.FC<
     event.stopPropagation();
     // trace the event
     logger.trace(event, 'Submitting the email-password login form...');
+    // use the beforeSubmit callback if provided
+    if (beforeSubmit) beforeSubmit();
     // process the submit action
-    return toast.promise(form.handleSubmit(handleFormData)(event), {
-      loading: 'Signing in...',
-      success: 'Successfully signed in!',
-      error: (err) => {
-        logger.error(err, 'Error signing in with email and password...');
-        return 'Error signing in with email and password...';
-      },
-    });
-  };
+    return form.handleSubmit(async (formData) => {
+      // initialize the promise for handling the email-password login
+      const actionP = handleEmailPasswordLogin({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          ...options,
+          captchaToken: captchaToken ?? options?.captchaToken,
+        },
+      });
+      // use the toast hook to progress the login
+      toast.promise(actionP, {
+        loading: 'Signing in...',
+        success: 'Successfully signed in!',
+        error: (err) => {
+          logger.error(err, 'Error signing in with email and password...');
+          return 'Error signing in with email and password...';
+        },
+      });
+    })(event);
+  }
 
-  const handleOnCancel = (event: React.BaseSyntheticEvent) => {
-    // prevent the default action
-    event.preventDefault();
-    // stop the event from bubbling up
-    event.stopPropagation();
-    // call the onCancel callback if provided
-    if (onCancel) onCancel();
-  };
   // render the form
   return (
     <Form {...form}>

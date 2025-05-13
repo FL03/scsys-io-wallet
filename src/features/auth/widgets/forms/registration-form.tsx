@@ -16,7 +16,7 @@ import { z } from 'zod';
 // project
 import { logger } from '@/lib/logger';
 import { createBrowserClient } from '@/lib/supabase';
-import { cn, createUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 // components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/form';
 
 // feature-specific
+import { handleRegistration } from '@/features/auth/utils';
 
 // 1. Define your form schema.
 export const registrationFormSchema = z
@@ -127,7 +128,6 @@ export const RegistrationForm: React.FC<
     defaultValues = { ...defaultValues, ...values };
     values = undefined;
   }
-  const supabase = createBrowserClient();
   // call the 'useForm' hook and pass your form schema to the 'resolver' property.
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationFormSchema),
@@ -145,49 +145,29 @@ export const RegistrationForm: React.FC<
       logger.trace(event, 'Submitting the registration form...');
       if (beforeSubmit) beforeSubmit();
 
-      // register the user
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
+      toast.promise(
+        handleRegistration(formData, {
           ...options,
-          data: {
-            ...options?.data,
-            email: [formData.email],
-            username: formData.username,
+          captchaToken: captchaToken ?? options?.captchaToken,
+        }),
+        {
+          loading: 'Registering...',
+          success: (data) => {
+            logger.info(
+              { data },
+              'Successfully registered the user and created a session...'
+            );
+            if (onSubmitSuccess) onSubmitSuccess(formData);
+            return 'Successfully registered the user...';
           },
-          captchaToken: captchaToken ?? options?.captchaToken ?? undefined,
-          emailRedirectTo: createUrl('/auth/callback').toString(),
-        },
-      });
-      // check for errors
-      if (error) {
-        // log the error
-        logger.error(error, 'Error registering the user...');
-        // set the form error
-        form.setError('root', {
-          type: 'manual',
-          message: error.message,
-        });
-        // notify the user
-        toast.error('Registration Error', {
-          description: 'Registration failed; please try again.',
-        });
-        return;
-      }
-      // log the success
-      logger.info(
-        'Successfully registered the user: ',
-        data.user?.user_metadata.username
+          error: (error) => {
+            logger.error({ error }, 'Error registering the user...');
+            return error.message;
+          },
+        }
       );
-      // alert the user
-      toast.success('Registration successful!', {
-        description: 'Check your email to confirm your account and login!',
-      });
       // reset the form
       form.reset();
-      // redirect the user to the login page
-      if (onSubmitSuccess) onSubmitSuccess(formData);
     })(event);
   };
   // render the registration form

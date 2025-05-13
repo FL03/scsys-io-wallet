@@ -20,7 +20,7 @@ import { revalidatePath } from 'next/cache';
 // project
 import { logger } from '@/lib/logger';
 import { createServerClient } from '@/lib/supabase';
-import { resolveOrigin } from '@/lib/utils';
+import { createUrl } from '@/lib/utils';
 // feature-specific
 import { RegistrationFormValues } from '../widgets/forms';
 
@@ -39,7 +39,7 @@ export const verifyTurnstileToken = async (props: {
   formData.append('response', props.token);
   formData.append('remoteip', props.remoteIp);
 
-  const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+  const url = new URL('/turnstile/v0/siteverify', 'https://challenges.cloudflare.com');
 
   const result = await fetch(url, {
     body: formData,
@@ -84,7 +84,6 @@ export const handleRegistration = async (
     logger.error('Passwords do not match...');
     throw new Error('Passwords do not match...');
   }
-  const callbackURL = new URL('/auth/callback', resolveOrigin());
   const supabase = await createServerClient();
 
   const { data, error } = await supabase.auth.signUp({
@@ -97,7 +96,7 @@ export const handleRegistration = async (
         ...options?.data,
         username,
       },
-      emailRedirectTo: callbackURL.toString(),
+      emailRedirectTo: createUrl('/auth/callback').toString(),
     },
   });
 

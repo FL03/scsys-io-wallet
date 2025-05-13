@@ -15,7 +15,7 @@ import { AuthProviderButtons } from '@/features/auth';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 // components
-import { DetailHeader } from '@/components/common/details';
+import { PopoverHeader } from '@/components/common/headers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -258,7 +258,7 @@ export const ProfileFormCard: React.FC<
       className={cn('w-full flex flex-col flex-1 dark:bg-dark', className)}
       {...props}
     >
-      <DetailHeader description={description} title={title} />
+      <PopoverHeader description={description} title={title} />
       <CardContent>
         <ProfileForm
           className="max-w-sm"

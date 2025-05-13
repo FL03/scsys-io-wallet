@@ -9,14 +9,13 @@
 import * as React from 'react';
 import { Subscription, SupabaseClient } from '@supabase/supabase-js';
 // project
-import { CACHE_KEY_USERNAME } from '@/lib/consts';
+import { CACHE_KEY_USERNAME } from '@/lib/constants';
 import { logger } from '@/lib/logger';
 import { createBrowserClient } from '@/lib/supabase';
 
 type HookOptions = {
   client?: SupabaseClient<any, 'public', any>;
 };
-
 
 /**
  * Memoized hook for getting the current user's username; invokes the "public.username" function deployed on the database using

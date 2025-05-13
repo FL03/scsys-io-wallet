@@ -6,7 +6,7 @@
 'use client';
 // imports
 import * as React from 'react';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 // components
 import { Button } from '@/components/ui/button';
@@ -21,12 +21,14 @@ export const BackButton: React.FC<
   Omit<React.ComponentPropsWithRef<typeof Button>, 'children' | 'asChild'> & {
     description?: React.ReactNode;
     label?: React.ReactNode;
+    orientation?: 'left' | 'right';
     showLabel?: boolean;
   }
 > = ({
   ref,
   onClick,
   description = 'Return to the previous page',
+  orientation = 'left',
   label = 'Back',
   size = 'icon',
   variant = 'ghost',
@@ -35,6 +37,18 @@ export const BackButton: React.FC<
 }) => {
   // Use the router to navigate back
   const router = useRouter();
+  const Icon: React.FC<{ className?: string; size?: number }> = ({
+    ...props
+  }) => {
+    switch (orientation) {
+      case 'left':
+        return <ArrowLeftIcon {...props} />;
+      case 'right':
+        return <ArrowRightIcon {...props} />;
+      default:
+        return <ArrowLeftIcon {...props} />;
+    }
+  };
   // return the back button with a tooltip
   return (
     <TooltipProvider>
@@ -54,7 +68,7 @@ export const BackButton: React.FC<
             size={size}
             variant={variant}
           >
-            <ArrowLeftIcon size={24} />
+            <Icon className="h-8 w-8" />
             <span className={showLabel ? 'not-sr-only' : 'sr-only'}>
               {label}
             </span>

@@ -14,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 // variants
-const scaffoldVariants = cva('gap-2 relative w-full', {
+const scaffoldVariants = cva('relative flex-1 h-full w-full overflow-auto', {
   defaultVariants: {
     flavor: 'default',
     variant: 'default',
@@ -28,7 +28,7 @@ const scaffoldVariants = cva('gap-2 relative w-full', {
     },
     variant: {
       default: '',
-      rounded: 'rounded',
+      rounded: 'rounded-2xl border-none ring-none shadow-inner drop-shadow-xl',
     },
   },
 });
@@ -56,8 +56,8 @@ type ScaffoldProps = {
 // ScaffoldProvider
 export const ScaffoldProvider = React.forwardRef<
   HTMLDivElement,
-  Readonly<React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>>
->(({ children, className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & Readonly<React.PropsWithChildren>
+>(({ className, ...props }, ref) => {
   const isMobile = useIsMobile();
   // declare the memoized values for the scaffold provider
   const ctx = React.useMemo(() => ({ isMobile }), [isMobile]);
@@ -65,11 +65,9 @@ export const ScaffoldProvider = React.forwardRef<
     <ScaffoldContext.Provider value={ctx}>
       <div
         ref={ref}
-        className={cn('flex-1 h-full w-full', className)}
+        className={cn('flex flex-col flex-1 min-h-full w-full', className)}
         {...props}
-      >
-        {children}
-      </div>
+      />
     </ScaffoldContext.Provider>
   );
 });
@@ -87,11 +85,7 @@ export const Scaffold = React.forwardRef<
   return (
     <Comp
       ref={ref}
-      className={cn(
-        scaffoldVariants({ flavor, variant }),
-        'relative w-full min-h-full flex flex-col flex-1',
-        className
-      )}
+      className={cn(scaffoldVariants({ flavor, variant }), className)}
       {...props}
     />
   );
@@ -103,8 +97,9 @@ export const ScaffoldContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     asChild?: boolean;
+    asContainer?: boolean;
   }
->(({ className, asChild = false, ...props }, ref) => {
+>(({ className, asChild, asContainer, ...props }, ref) => {
   // handle asChild
   const Comp = asChild ? Slot : 'div';
   // render the component
@@ -112,8 +107,9 @@ export const ScaffoldContent = React.forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        'flex-1 min-h-full w-full px-4 py-2 gap-4 lg:gap-6',
-        'inset-0 rounded-2xl border-none ring-none shadow-inner drop-shadow-xl',
+        'flex flex-col flex-1 min-h-full w-full px-4 py-2 gap-4 lg:gap-6',
+        'rounded-2xl border-none ring-none shadow-inner',
+        asContainer && 'container mx-auto',
         className
       )}
       {...props}
