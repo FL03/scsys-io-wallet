@@ -62,7 +62,7 @@ export default async function RootLayout({
 }
 
 export const metadata: Metadata = {
-  applicationName: 'Reaction',
+  applicationName: 'Wallet',
   authors: [
     {
       name: 'Joe McCain III',
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
   category: 'Technology',
   classification: 'platform',
   creator: 'FL03',
-  description: 'Empowering the next generation of internet-based experiences.',
+  description: 'A secure digital wallet for managing digital assets, currencies, and identities.',
   icons: [
     {
       url: '/logo.svg',
@@ -123,16 +123,16 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     creator: '@jo3mccain',
-    site: '@app.scsys.io',
-    title: 'Scattered-Systems - Reaction',
+    site: '@wallet.scsys.io',
+    title: 'Scattered-Systems - Wallet',
   },
   openGraph: {
     description:
       'Empowering the next generation of internet-based experiences.',
 
-    siteName: 'Reaction',
+    siteName: 'Wallet',
     locale: 'en_US',
-    title: 'Scattered-Systems - Reaction',
+    title: 'Scattered-Systems - Wallet',
     type: 'website',
     url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
     images: [
